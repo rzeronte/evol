@@ -1,0 +1,3 @@
+/Users/darkhead/CLionProjects/evol/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/darkhead/CLionProjects/evol/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/darkhead/CLionProjects/evol/cmake-build-debug/CMakeFiles/evol.dir

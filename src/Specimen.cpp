@@ -30,7 +30,7 @@ Specimen::Specimen(int id) : id(id)
     eated     = new std::vector<Specimen*>;
 }
 
-void Specimen::evaluate(Uint32 *videoBuffer, int canvas_width, int canvas_height, std::vector<Specimen*> &specimens, int current_global_size)
+void Specimen::evaluate(Uint32 *videoBuffer, int canvas_width, int canvas_height, std::vector<Specimen*> &specimens)
 {
     this->base_color = this->specie.morphology.color;
 
@@ -38,11 +38,11 @@ void Specimen::evaluate(Uint32 *videoBuffer, int canvas_width, int canvas_height
 
     this->getSpecimensPercepted(specimens);
 
-    this->think( specimens, current_global_size );
+    this->think( specimens );
 
     this->move(canvas_width, canvas_height);
 
-    this->debug(videoBuffer, canvas_width, canvas_height, true, false, true);
+    this->debug(videoBuffer, canvas_width, canvas_height, false, false, true);
 }
 
 bool Specimen::updateBrain()
@@ -60,7 +60,7 @@ bool Specimen::updateBrain()
     return false;
 }
 
-void Specimen::think(std::vector<Specimen*> &specimens, int current_global_size)
+void Specimen::think(std::vector<Specimen*> &specimens)
 {
 
     if (this->updateBrain()) {
@@ -69,19 +69,19 @@ void Specimen::think(std::vector<Specimen*> &specimens, int current_global_size)
         if ( !enemies->empty() ) {
             this->applyEscapeGroups(enemies);
 
-            /*int randon_belligerance = abs(randInRange(1, 99));
+            int randon_belligerance = abs(randInRange(1, 99));
 
-            if ( randon_belligerance < this->specie.genome.belligerence ) {
-                int total_friends_size = (friends->size() * this->specie.genome.size) / 10.0f;
+            if ( randon_belligerance < this->specie.genome.belligerence && isHungry() ) {
+                int total_friends_size = (friends->size() * this->specie.genome.size);
 
                 if ( (float) total_friends_size  > mostNearEnemy->specie.genome.size) {
-                    this->attackTo( *mostNearEnemy );
+                    this->attackTo( *mostNearEnemy , friends->size() );
                     eated->emplace_back( mostNearEnemy );
 
                 } else {
                     this->applyEscapeGroups(enemies);
                 }
-            }*/
+            }
 
         } else if ( !eat->empty() && isHungry() ) {
             if ( this->canEat( *mostNearEat ) ) {
@@ -97,12 +97,9 @@ void Specimen::think(std::vector<Specimen*> &specimens, int current_global_size)
             }
 
             // sex
-            int max_simulation_size = MAX_SIMULATION_SIZE_UNITS;
-            if (!isHungry() && current_global_size < max_simulation_size ) {
-                float random_sexuality = fabs(randInRange(0, 100)) * 1.0f;
-                if ( random_sexuality  < this->specie.genome.sexuality * SEX_FACTOR) {
-                    this->applySex(specimens, this, mostNearFriend);
-                }
+            float random_sexuality = fabs(randInRange(0, 100)) * 1.0f;
+            if (!isHungry() && random_sexuality < this->specie.genome.sexuality * SEX_FACTOR) {
+                this->applySex(specimens, this, mostNearFriend);
             }
         }
 
@@ -229,7 +226,10 @@ void Specimen::getSpecimensPercepted(std::vector<Specimen*> &specimens)
         if (specimens[i]->dead) continue;
 
         float d = this->getDistanceWithSpecimen( *specimens[i] );
-        if (d <= this->specie.genome.perception) {
+
+        float specimen_perception = this->specie.genome.perception;
+
+        if (d <= specimen_perception) {
             specimens[i]->current_distance = d;
             percepted->emplace_back( specimens[i] );
 
@@ -261,7 +261,7 @@ void Specimen::getSpecimensPercepted(std::vector<Specimen*> &specimens)
             float percepted_size = s->specie.genome.size;
             float current_size = this->specie.genome.size;
 
-            if ( percepted_size > current_size) {
+            if ( percepted_size >= current_size) {
                 enemies->emplace_back(s);
                 if (distance < mostNearEnemy_d) {
                     mostNearEnemy = s;
@@ -269,7 +269,7 @@ void Specimen::getSpecimensPercepted(std::vector<Specimen*> &specimens)
                 }
             }
 
-            if ( percepted_size < current_size) {
+            if ( percepted_size <= current_size) {
                 eat->emplace_back( s );
                 if (distance < mostNearEat_d) {
                     mostNearEat = s;
@@ -453,26 +453,28 @@ void Specimen::applyEat()
 
 bool Specimen::isHungry()
 {
-    return specie.genome.energy < initial_energy * 0.75;
+    return specie.genome.energy < initial_energy * 0.99;
 }
 
 
 void Specimen::attackTo(Specimen &other, int num_attackants)
 {
     float energy_factor = ENERGY_EATING_FACTOR;
-    other.specie.genome.energy -= ( (other.specie.genome.size / this->specie.genome.size) * energy_factor) / num_attackants;
-    this->specie.genome.energy += ( (other.specie.genome.size / this->specie.genome.size) * energy_factor   );
+    float damage; (this->specie.genome.size * energy_factor) / num_attackants;
+    other.specie.genome.energy -=  damage*2;
+    this->specie.genome.energy +=  damage*8;
 
     if (this->specie.genome.energy <= 0) {
         this->dead = true;
     }
+    if (other.specie.genome.energy <=0) {
+        other.dead = true;
+    }
+
 }
 
 void Specimen::applySex(std::vector<Specimen*> &specimens, Specimen *s1, Specimen *s2)
 {
-    s1->already_sex = true;
-    s2->already_sex = true;
-
     auto *specimen = new Specimen( specimens.size() );
     specimen->setSpecie( this->specie );
     specimen->setTimer( timer);

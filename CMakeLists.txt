@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 project(evol)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -24,9 +24,27 @@ include_directories(
         ${SDL2_mixer_dir}
         ${OPENGL_INCLUDE_DIRS}
 )
-
 add_executable(evol
         main.cpp
+
+        imgui/imgui.h
+        imgui/imgui.cpp
+        imgui/imgui_demo.cpp
+        imgui/imgui_draw.cpp
+        imgui/imgui_internal.h
+        imgui/imgui_widgets.cpp
+        imgui/imstb_rectpack.h
+        imgui/imstb_textedit.h
+        imgui/imstb_truetype.h
+
+        imgui/examples/imgui_impl_sdl.h
+        imgui/examples/imgui_impl_sdl.cpp
+        imgui/examples/imgui_impl_opengl2.h
+        imgui/examples/imgui_impl_opengl2.cpp
+
+        imgui/examples/imgui_impl_opengl3.h
+        imgui/examples/imgui_impl_opengl3.cpp
+
         src/Specie.cpp
         include/Specie.h
         src/Behavior.cpp
@@ -40,7 +58,16 @@ add_executable(evol
         include/Specimen.h
         include/Timer.h
         src/Timer.cpp
-        species/andreita.h src/Loader.cpp include/Loader.h include/Colors.h include/Drawable.h species/alpiste.h include/Text.h species/gordito.h)
+        species/andreita.h src/Loader.cpp
+        include/Loader.h
+        include/Colors.h
+        include/Drawable.h
+        species/alpiste.h
+        include/Text.h
+        species/gordito.h
+        imgui/imconfig.h
+
+        include/Window.h)
 
 target_link_libraries(evol
         ${SDL2_LIBRARY}
@@ -48,4 +75,5 @@ target_link_libraries(evol
         ${SDLTTF_LIBRARY}
         ${SDL2_MIXER_LIBRARY}
         ${OPENGL_LIBRARIES}
+        GLEW
 )

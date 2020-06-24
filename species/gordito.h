@@ -12,17 +12,15 @@ class gordito : public Specie {
 public:
     gordito() {
         this->name = "gordito";
-        this->genome.size = 25.0f;
-        this->genome.speed = 1.5f;
-        this->genome.perception = 100.0f;
+        this->genome.size = 30.0f;
 
-        this->genome.sociability = 5.f;
+        this->genome.sociability = 75.f;
         this->genome.sexuality = 5.0f;
-        this->genome.belligerence = 5;
+        this->genome.belligerence = 50;
 
-        this->genome.energy = 1000.0f;
         this->genome.brain_tick = 0.10f;
         this->morphology.color = Colors::yellow();
+        this->updateRacials();
     }
 
     void evaluate() override {

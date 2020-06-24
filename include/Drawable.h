@@ -7,6 +7,7 @@
 
 #include <SDL_types.h>
 #include "Colors.h"
+#include "types.h"
 
 class Drawable {
 public:
@@ -141,6 +142,45 @@ public:
                 error += (tx - diameter);
             }
         }
+    }
+
+    static void createStatisticsChart(Uint32 *videoBuffer, float globalTime, float lastTicks, int screen_width, int screen_height, Timer *timer, std::vector<Types::chartFrameInfo> &frameInfo, Specie *specie, std::vector<Specimen*> &specimens)
+    {
+        if ( frameInfo.size() >= screen_width ) {
+            frameInfo.clear();
+            globalTime = 0;
+        }
+
+        float ticks     = timer->getTicks();
+        float deltatime = ticks - lastTicks;
+
+        lastTicks = ticks;
+
+        globalTime += (deltatime / 1000);
+
+        int startX = 0;
+        int startY = screen_height;
+
+
+        int reductor = 4;
+        for (int i = 0; i < frameInfo.size(); i++) {
+            Drawable::drawPixel( videoBuffer, screen_width, screen_height, startX + frameInfo[i].second, startY - 1 - frameInfo[i].population/reductor, specie->morphology.color );
+            Drawable::drawPixel( videoBuffer, screen_width, screen_height, startX + frameInfo[i].second, startY - 1 - frameInfo[i].population/reductor+1, specie->morphology.color );
+            Drawable::drawPixel( videoBuffer, screen_width, screen_height, startX + frameInfo[i].second, startY - 1 - frameInfo[i].population/reductor+2, specie->morphology.color );
+        }
+
+        int contSpecie = 0;
+        for (int i = 0; i < specimens.size(); i++) {
+            if (specimens[i]->specie.name == specie->name && !specimens[i]->dead) {
+                contSpecie++;
+            }
+        }
+
+        Types::chartFrameInfo cInfo;
+        cInfo.population = contSpecie;
+        cInfo.second = frameInfo.size();
+
+        frameInfo.push_back( cInfo );
     }
 };
 #endif //EVOL_DRAWABLE_H

@@ -20,18 +20,15 @@ class alpiste : public Specie {
 public:
     alpiste() {
         this->name = "alpiste";
-        this->genome.size = 7.0f;
-        this->genome.speed = 1.5f;
-        this->genome.perception = 100.0f;
-
-        this->genome.energy = 1000.0f;
+        this->genome.size = 10.0f;
         this->genome.brain_tick = 0.10f;
 
         this->genome.sociability = 75.0f;
-        this->genome.sexuality = 1.0f;
+        this->genome.sexuality = 75.0f;
         this->genome.belligerence = 75.0f;
 
         this->morphology.color = Colors::magenta();
+        this->updateRacials();
     }
 };
 #endif //EVOL_ALPISTE_H

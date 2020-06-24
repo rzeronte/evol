@@ -12,17 +12,16 @@ class eduito : public Specie {
 public:
     eduito() {
         this->name = "eduito";
-        this->genome.size = 20.0f;
-        this->genome.speed = 1.5f;
-        this->genome.perception = 150.0f;
-
-        this->genome.sociability = 25.f;
-        this->genome.sexuality = 25.0f;
-        this->genome.belligerence = 25;
-
-        this->genome.energy = 1000.0f;
+        this->genome.size = 10.0f;
         this->genome.brain_tick = 0.10f;
+
+        this->genome.sociability = 75.0f;
+        this->genome.sexuality = 99.0f;
+        this->genome.belligerence = 75.0f;
+
         this->morphology.color = Colors::red();
+        this->updateRacials();
+
     }
 
     void evaluate() override {

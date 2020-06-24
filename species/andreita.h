@@ -10,17 +10,17 @@ class andreita : public Specie {
 public:
     andreita() {
         this->name = "andreito";
-        this->genome.size = 12.5f;
-        this->genome.speed = 1.75f;
-        this->genome.perception = 200.0f;
-        this->genome.energy = 1000.0f;
-        this->genome.brain_tick = 0.10f;
+        this->genome.size = 10.0f;
 
-        this->genome.sociability = 25.0f;
-        this->genome.sexuality = 35.0f;
+        this->genome.sociability = 51.0f;
+        this->genome.sexuality = 15.0f;
+        this->genome.belligerence = 5;
+
+        this->genome.brain_tick = 0.10f;
         this->genome.belligerence = 75;
 
         this->morphology.color = Colors::green();
+        this->updateRacials();
     }
 
     void evaluate() override {

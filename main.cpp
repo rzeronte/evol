@@ -1,5 +1,6 @@
 
-#include <SDL.h>
+
+#include <SDL_opengl.h>
 #include <vector>
 #include <iostream>
 #include "include/Specimen.h"
@@ -9,148 +10,83 @@
 #include "species/andreita.h"
 #include "species/eduito.h"
 #include "species/gordito.h"
+#include "imgui/imgui.h"
+#include "imgui/examples/imgui_impl_opengl3.h"
+#include "imgui/examples/imgui_impl_sdl.h"
 
-#define MAX_BY_SPECIES 512
+#include "include/Window.h"
+#include "include/types.h"
 
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+#define MAX_BY_SPECIES 256
 
-auto specie1 = alpiste();
-auto specie2 = andreita();
-auto specie3 = eduito();
-auto specie4 = gordito();
-
-std::vector<Specie> types;
-
-float globalTime;
-float lastTicks;
-
-struct chartFrameInfo {
-    float second;
-    int population;
-};
-
-void createStatisticsChart(Uint32 *videoBuffer, Timer *timer, std::vector<chartFrameInfo> &frameInfo, Specie *specie, std::vector<Specimen*> &specimens)
-{
-    if ( frameInfo.size() >= SCREEN_WIDTH ) {
-        frameInfo.clear();
-        globalTime = 0;
-    }
-
-    float ticks     = timer->getTicks();
-    float deltatime = ticks - lastTicks;
-
-    lastTicks = ticks;
-
-    globalTime += (deltatime / 1000);
-
-    int startX = 0;
-    int startY = SCREEN_HEIGHT;
-
-
-    int reductor = 4;
-    for (int i = 0; i < frameInfo.size(); i++) {
-        Drawable::drawPixel( videoBuffer, SCREEN_WIDTH, SCREEN_HEIGHT, startX + frameInfo[i].second, startY - 1 - frameInfo[i].population/reductor, specie->morphology.color );
-        Drawable::drawPixel( videoBuffer, SCREEN_WIDTH, SCREEN_HEIGHT, startX + frameInfo[i].second, startY - 1 - frameInfo[i].population/reductor+1, specie->morphology.color );
-        Drawable::drawPixel( videoBuffer, SCREEN_WIDTH, SCREEN_HEIGHT, startX + frameInfo[i].second, startY - 1 - frameInfo[i].population/reductor+2, specie->morphology.color );
-    }
-
-    int contSpecie = 0;
-    for (int i = 0; i < specimens.size(); i++) {
-        if (specimens[i]->specie.name == specie->name && !specimens[i]->dead) {
-            contSpecie++;
-        }
-    }
-
-    chartFrameInfo cInfo;
-    cInfo.population = contSpecie;
-    cInfo.second = frameInfo.size();
-
-    frameInfo.push_back( cInfo );
-}
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 int main()
 {
+    std::vector<Specie> types;
+
+    auto specie1 = alpiste();
+    auto specie2 = andreita();
+    auto specie3 = eduito();
+    auto specie4 = gordito();
+
     types.push_back(specie1);
-    types.push_back(specie2);
     types.push_back(specie3);
-    types.push_back(specie4);
+    //types.push_back(specie3);
+    //types.push_back(specie4);
 
-    std::vector< std::vector<chartFrameInfo> > frameInfoSpecies;
+    std::vector< std::vector<Types::chartFrameInfo> > frameInfoSpecies;
 
-    std::vector<chartFrameInfo> frameInfoSpecie1;
-    std::vector<chartFrameInfo> frameInfoSpecie2;
-    std::vector<chartFrameInfo> frameInfoSpecie3;
-    std::vector<chartFrameInfo> frameInfoSpecie4;
+    std::vector<Types::chartFrameInfo> frameInfoSpecie1;
+    std::vector<Types::chartFrameInfo> frameInfoSpecie2;
+    std::vector<Types::chartFrameInfo> frameInfoSpecie3;
+    std::vector<Types::chartFrameInfo> frameInfoSpecie4;
 
     frameInfoSpecies.push_back( frameInfoSpecie1 );
     frameInfoSpecies.push_back( frameInfoSpecie2 );
-    frameInfoSpecies.push_back( frameInfoSpecie3 );
-    frameInfoSpecies.push_back( frameInfoSpecie4 );
+    //frameInfoSpecies.push_back( frameInfoSpecie3 );
+    //frameInfoSpecies.push_back( frameInfoSpecie4 );
 
-    SDL_Window    *window;
-    SDL_Renderer  *renderer;
-    SDL_Surface   *screenSurface;
-    SDL_Texture   *screenTexture;
+    Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGui_ImplSDL2_InitForOpenGL(window.window, window.contextOpenGL);
+    ImGui_ImplOpenGL3_Init();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.WantCaptureMouse = false;
+    io.WantCaptureKeyboard = false;
+
+    // Setup style
+    ImGui::StyleColorsDark();
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.FrameBorderSize = 1.0f;
 
     Timer timer;
+    float globalTime;
+    float lastTicks;
+
     bool finish = false;
 
     int screen_width = SCREEN_WIDTH;
     int screen_height = SCREEN_HEIGHT;
 
-    int sizeBuffers = screen_width*screen_height;
-    auto *videoBuffer = new Uint32[sizeBuffers];
-
     std::vector<Specimen*> specimens;
-
-    int total_size = 0;
-
-    //Initialize SDL
-    if (SDL_Init( SDL_INIT_EVERYTHING) < 0) {
-        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-        exit(-1);
-    } else {
-
-        //Create window
-        window = SDL_CreateWindow(
-                "Evol",
-                SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED,
-                screen_width,
-                screen_height,
-                SDL_WINDOW_OPENGL | SDL_RENDERER_PRESENTVSYNC |SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE
-        );
-
-        if (window == NULL) {
-            printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-            exit(-1);
-        } else {
-
-            screenSurface = SDL_CreateRGBSurface(0, screen_width, screen_height, 32, 0, 0, 0, 0);
-            SDL_SetSurfaceBlendMode(screenSurface, SDL_BLENDMODE_BLEND);
-            renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED );
-
-            screenTexture = SDL_CreateTexture (renderer, SDL_PIXELFORMAT_ARGB8888,
-                                               SDL_TEXTUREACCESS_STATIC,
-                                               screen_width,screen_height
-            );
-
-        }
-    }
 
     // start
     timer.start();
-
     // Load specimens
     Loader::LoadSimulationSpecimens(MAX_BY_SPECIES, &timer, screen_width, screen_height, types, specimens);
 
     // main loop
     while ( !finish ) {
-
         // capture events
         SDL_Event event;
         while ( SDL_PollEvent(&event) ) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 finish = true;
             }
@@ -164,12 +100,18 @@ int main()
             }
         }
 
+        /*ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame( window.window );
+        ImGui::NewFrame();
+
+        ImGui::Render();
+        SDL_GL_MakeCurrent(window.window, window.contextOpenGL);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_SwapWindow(window.window);*/
+
+
         // loop specimens
         int dead = 0;
-        int total_size = 0;
-        for (int i = 0; i < specimens.size() ; i++) {
-            total_size+= (int) specimens[i]->specie.genome.size;
-        }
 
         for (int j = 0 ; j < specimens.size(); j++) {
 
@@ -177,8 +119,9 @@ int main()
                 dead++;
                 continue;
             }
+
             specimens[j]->specie.evaluate();
-            specimens[j]->evaluate( videoBuffer, screen_width, screen_height, specimens, total_size);
+            specimens[j]->evaluate( window.videoBuffer, screen_width, screen_height, specimens );
 
             bool drawCenter = false;
             if (!specimens[j]->percepted->empty()) {
@@ -186,7 +129,7 @@ int main()
             }
 
             Drawable::DrawCircle(
-                    videoBuffer,
+                    window.videoBuffer,
                     screen_width,
                     screen_height,
                     specimens[j]->position.x,
@@ -196,23 +139,21 @@ int main()
                     drawCenter,
                     specimens[j]->isHungry()
             );
-
         }
 
         // draw population chart
         for (int i = 0; i < types.size(); i++) {
-            createStatisticsChart(videoBuffer, &timer, frameInfoSpecies[i], &types[i], specimens);
+            Drawable::createStatisticsChart(window.videoBuffer, globalTime, lastTicks, screen_width, screen_height, &timer, frameInfoSpecies[i], &types[i], specimens);
         }
 
-        // Update Window
-        SDL_UpdateTexture( screenTexture, NULL, videoBuffer, screenSurface->pitch );
-        SDL_RenderCopy( renderer, screenTexture, NULL, NULL);
-        SDL_RenderPresent( renderer );
+        window.updateScreen();
 
-        // Clear Buffer
-        std::fill(videoBuffer, videoBuffer + sizeBuffers, NULL);
-
-        if (dead == specimens.size()) {
+        if (dead == specimens.size()-1) {
+            for (int j = 0 ; j < specimens.size(); j++) {
+                if (specimens[j]->dead == false) {
+                    std::cout << "Ganan los " << specimens[j]->specie.name << std::endl << std::endl;
+                }
+            }
             Loader::ResetSimulation(MAX_BY_SPECIES, &timer, screen_width, screen_height, types, specimens);
             for (int j = 0 ; j < frameInfoSpecies.size(); j++) {
                 frameInfoSpecies[j].clear();

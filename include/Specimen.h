@@ -21,10 +21,11 @@
 #define MAX_SPECIMENS_PERCEPTED 5
 
 #define EATING_MARGING 2.5f
-#define ENERGY_EATING_FACTOR 50.00f;
-#define ENERGY_CONSUME_FACTOR 0.055f
+#define ENERGY_EATING_FACTOR 2.75f;
+#define ENERGY_CONSUME_FACTOR 0.20f
 
-#define SEX_FACTOR 0.005f
+#define FACTOR_NUM_SPECIES_BY_SICE 0.075f
+#define SEX_FACTOR 0.025f
 
 #define MAX_SIMULATION_SIZE_UNITS 10000;
 
@@ -46,8 +47,6 @@ public:
 
     glm::vec2 position;
     glm::vec2 direction;
-
-    bool already_sex = false;
 
     float initial_energy = 0;
     float current_speed = 0;
@@ -80,7 +79,7 @@ public:
 
     void setTimer(Timer *timer);
 
-    void evaluate(Uint32 *buffer, int canvas_width, int canvas_height, std::vector<Specimen*> &specimens, int current_global_size);
+    void evaluate(Uint32 *buffer, int canvas_width, int canvas_height, std::vector<Specimen*> &specimens);
 
     void move(int limit_x, int limit_y);
     void applyFriction();
@@ -97,7 +96,7 @@ public:
 
     void getSpecimensPercepted(std::vector<Specimen*> &specimens);
 
-    void think(std::vector<Specimen*> &specimens, int current_global_size);
+    void think(std::vector<Specimen*> &specimens );
     bool updateBrain();
 
     void setPosition(int x, int y);

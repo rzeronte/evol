@@ -5,14 +5,13 @@
 #include <iostream>
 #include "../include/Loader.h"
 
-void Loader::LoadSimulationSpecimens(int max_by_specie, Timer *timer, int screen_width, int screen_height, std::vector<Specie> &types, std::vector <Specimen*> &specimens) {
-
-
+void Loader::LoadSimulationSpecimens(int max_by_specie, Timer *timer, int screen_width, int screen_height, std::vector<Specie> &types, std::vector <Specimen*> &specimens)
+{
     float divisor = 1;
-    int total_size = 0;
     for (int j = 0 ; j < types.size(); j++) {
-        int num_specimens =  (int) ( (float) max_by_specie/types[j].genome.size);
-        std::cout << "Loading " << num_specimens << " " << types[j].name <<std::endl;
+        int num_specimens =  (int) ( (float) max_by_specie/types[j].genome.size * 75.0f);
+        num_specimens *= FACTOR_NUM_SPECIES_BY_SICE;
+        std::cout << "Loading " << num_specimens << " " << types[j].name << " | " ;
 
         for (int i = 0 ; i < num_specimens; i++) {
             auto *specimen = new Specimen( specimens.size() );
@@ -21,11 +20,11 @@ void Loader::LoadSimulationSpecimens(int max_by_specie, Timer *timer, int screen
             specimen->setRandomPosition(screen_width, screen_height);
             specimen->setRandomDirection();
             specimens.push_back( specimen );
-            total_size += specimen->specie.genome.size;
         }
         divisor*=5;
     }
-    std::cout << "Total size: " << total_size <<std::endl;
+
+    std::cout << std::endl ;
 
 }
 
